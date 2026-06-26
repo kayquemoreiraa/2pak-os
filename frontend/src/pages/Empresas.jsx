@@ -1,0 +1,234 @@
+﻿import { useEffect, useState } from "react";
+import { Plus, Search, Building2, Pencil, Trash2 } from "lucide-react";
+import { getEmpresas, criarEmpresa, atualizarEmpresa, deletarEmpresa } from "../services/empresaService";
+import { getStatus } from "../services/statusService";
+import Modal from "../components/ui/Modal";
+import Input from "../components/ui/Input";
+import Select from "../components/ui/Select";
+
+const PORTES = [
+  { value: "micro",   label: "Micro"   },
+  { value: "pequena", label: "Pequena" },
+  { value: "media",   label: "Media"   },
+  { value: "grande",  label: "Grande"  },
+];
+
+const ORIGENS = [
+  { value: "indicacao",     label: "Indicacao"     },
+  { value: "inbound",       label: "Inbound"       },
+  { value: "outbound",      label: "Outbound"      },
+  { value: "evento",        label: "Evento"        },
+  { value: "redes_sociais", label: "Redes Sociais" },
+];
+
+const formInicial = {
+  nome_fantasia: "",
+  razao_social: "",
+  cnpj: "",
+  segmento: "",
+  porte: "",
+  site: "",
+  origem_lead: "",
+  status_atual_id: "",
+};
+
+export default function Empresas() {
+  const [empresas, setEmpresas]     = useState([]);
+  const [status, setStatus]         = useState([]);
+  const [busca, setBusca]           = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [modal, setModal]           = useState(false);
+  const [form, setForm]             = useState(formInicial);
+  const [editandoId, setEditandoId] = useState(null);
+  const [salvando, setSalvando]     = useState(false);
+  const [erro, setErro]             = useState("");
+
+  useEffect(() => {
+    Promise.all([getEmpresas(), getStatus()]).then(([emp, sta]) => {
+      setEmpresas(emp.data);
+      setStatus(sta.data);
+      setCarregando(false);
+    });
+  }, []);
+
+  const filtradas = empresas.filter((e) =>
+    e.nome_fantasia.toLowerCase().includes(busca.toLowerCase())
+  );
+
+  function handleChange(e) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  function abrirCriar() {
+    setEditandoId(null);
+    setForm(formInicial);
+    setErro("");
+    setModal(true);
+  }
+
+  function abrirEditar(empresa) {
+    setEditandoId(empresa.id);
+    setForm({
+      nome_fantasia:  empresa.nome_fantasia  || "",
+      razao_social:   empresa.razao_social   || "",
+      cnpj:           empresa.cnpj           || "",
+      segmento:       empresa.segmento       || "",
+      porte:          empresa.porte          || "",
+      site:           empresa.site           || "",
+      origem_lead:    empresa.origem_lead    || "",
+      status_atual_id: empresa.status_atual_id || "",
+    });
+    setErro("");
+    setModal(true);
+  }
+
+  function fecharModal() {
+    setModal(false);
+    setEditandoId(null);
+    setForm(formInicial);
+    setErro("");
+  }
+
+  async function handleSalvar() {
+    if (!form.nome_fantasia.trim()) { setErro("Nome fantasia e obrigatorio."); return; }
+    setSalvando(true);
+    setErro("");
+    try {
+      if (editandoId) {
+        const res = await atualizarEmpresa(editandoId, form);
+        setEmpresas((prev) => prev.map((e) => e.id === editandoId ? res.data : e));
+      } else {
+        const res = await criarEmpresa(form);
+        setEmpresas((prev) => [res.data, ...prev]);
+      }
+      fecharModal();
+    } catch (err) {
+      setErro(err.response?.data?.erro || "Erro ao salvar empresa.");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function handleDeletar(empresa) {
+    if (!window.confirm("Excluir a empresa " + empresa.nome_fantasia + "?")) return;
+    await deletarEmpresa(empresa.id);
+    setEmpresas((prev) => prev.filter((e) => e.id !== empresa.id));
+  }
+
+  const statusOpcoes = status.map((s) => ({ value: s.id, label: s.nome }));
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-100">Empresas</h1>
+          <p className="text-gray-500 text-sm">Gerencie seus leads e clientes</p>
+        </div>
+        <button
+          onClick={abrirCriar}
+          className="flex items-center gap-2 bg-brand-accent hover:bg-brand-hover text-white text-sm px-4 py-2 rounded-lg transition-colors"
+        >
+          <Plus size={16} />
+          Nova Empresa
+        </button>
+      </div>
+
+      <div className="relative mb-6">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+        <input
+          type="text"
+          placeholder="Buscar empresa..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="w-full bg-surface-raised border border-surface-border rounded-lg pl-9 pr-4 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-accent"
+        />
+      </div>
+
+      {carregando ? (
+        <p className="text-gray-500 text-sm">Carregando...</p>
+      ) : filtradas.length === 0 ? (
+        <div className="text-center py-20">
+          <Building2 size={40} className="mx-auto text-gray-700 mb-3" />
+          <p className="text-gray-500">Nenhuma empresa encontrada.</p>
+          <button onClick={abrirCriar} className="mt-4 text-brand-accent text-sm hover:underline">
+            Adicionar primeira empresa
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {filtradas.map((empresa) => (
+            <div
+              key={empresa.id}
+              className="bg-surface-raised border border-surface-border rounded-xl p-5 flex items-center justify-between hover:border-brand-accent transition-colors group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-brand-600 flex items-center justify-center">
+                  <span className="text-brand-accent font-bold text-sm">
+                    {empresa.nome_fantasia.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-gray-100 font-medium">{empresa.nome_fantasia}</p>
+                  <p className="text-gray-500 text-xs">{empresa.segmento || "Sem segmento"}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-gray-600 text-xs">{empresa.origem_lead || ""}</span>
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => abrirEditar(empresa)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-brand-accent hover:bg-brand-600 transition-colors"
+                    title="Editar"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDeletar(empresa)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    title="Excluir"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {modal && (
+        <Modal
+          titulo={editandoId ? "Editar Empresa" : "Nova Empresa"}
+          onClose={fecharModal}
+        >
+          <div className="flex flex-col gap-4">
+            <Input label="Nome Fantasia *" name="nome_fantasia" placeholder="Ex: 2Pak Studio" value={form.nome_fantasia} onChange={handleChange} />
+            <Input label="Razao Social" name="razao_social" placeholder="Ex: 2Pak Studio Ltda" value={form.razao_social} onChange={handleChange} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input label="CNPJ" name="cnpj" placeholder="00.000.000/0001-00" value={form.cnpj} onChange={handleChange} />
+              <Input label="Segmento" name="segmento" placeholder="Ex: E-commerce" value={form.segmento} onChange={handleChange} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Select label="Porte" name="porte" options={PORTES} value={form.porte} onChange={handleChange} />
+              <Select label="Origem do Lead" name="origem_lead" options={ORIGENS} value={form.origem_lead} onChange={handleChange} />
+            </div>
+            <Input label="Site" name="site" placeholder="https://..." value={form.site} onChange={handleChange} />
+            <Select label="Status no Pipeline" name="status_atual_id" options={statusOpcoes} value={form.status_atual_id} onChange={handleChange} />
+
+            {erro && <p className="text-red-400 text-xs">{erro}</p>}
+
+            <div className="flex gap-3 pt-2">
+              <button onClick={fecharModal} className="flex-1 px-4 py-2 rounded-lg border border-surface-border text-gray-400 text-sm hover:text-gray-100 transition-colors">
+                Cancelar
+              </button>
+              <button onClick={handleSalvar} disabled={salvando} className="flex-1 px-4 py-2 rounded-lg bg-brand-accent hover:bg-brand-hover text-white text-sm transition-colors disabled:opacity-50">
+                {salvando ? "Salvando..." : editandoId ? "Atualizar" : "Salvar"}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
