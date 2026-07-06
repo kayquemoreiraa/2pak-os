@@ -1,0 +1,21 @@
+module.exports = {
+  up: async (pool) => {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS webhook_endpoints (
+        id             CHAR(36)     NOT NULL PRIMARY KEY,
+        organizacao_id CHAR(36)     NOT NULL,
+        url            VARCHAR(500) NOT NULL,
+        descricao      VARCHAR(200) NULL,
+        eventos        TEXT         NOT NULL,
+        secret         VARCHAR(100) NOT NULL,
+        ativo          BOOLEAN      NOT NULL DEFAULT TRUE,
+        criado_em      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_webhook_endpoints_org (organizacao_id),
+        KEY idx_webhook_endpoints_ativo (ativo)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+  },
+  down: async (pool) => {
+    await pool.query('DROP TABLE IF EXISTS webhook_endpoints');
+  },
+};

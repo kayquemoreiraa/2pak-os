@@ -2,14 +2,11 @@
 
 export default function Modal({ titulo, onClose, children }) {
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-surface-raised border border-surface-border rounded-xl w-full max-w-lg">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-border">
-          <h2 className="text-gray-100 font-semibold">{titulo}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-100 transition-colors"
-          >
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-cortex-800 border border-cortex-border rounded-xl w-full max-w-lg animate-slide-up">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-cortex-border">
+          <h2 className="text-cortex-text font-semibold">{titulo}</h2>
+          <button onClick={onClose} className="text-cortex-subtle hover:text-cortex-text transition-colors">
             <X size={18} />
           </button>
         </div>

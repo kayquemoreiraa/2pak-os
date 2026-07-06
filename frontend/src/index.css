@@ -1,23 +1,48 @@
 ﻿@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    @apply bg-brand-900 text-gray-100 font-sans antialiased;
+    background-color: #181816;
+    color: #f8f7f7;
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #181816; }
+  ::-webkit-scrollbar-thumb { background: #2c2c29; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3a37; }
+}
 
-  ::-webkit-scrollbar {
-    width: 6px;
+@layer components {
+  .cortex-card {
+    @apply bg-cortex-800 border border-cortex-border rounded-xl transition-all duration-200;
   }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-brand-800;
+  .cortex-card-hover {
+    @apply cortex-card hover:border-cortex-primary/40 hover:bg-cortex-700;
   }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-surface-border rounded-full;
+  .cortex-btn-primary {
+    @apply bg-cortex-primary hover:bg-cortex-hover text-cortex-900 font-semibold px-4 py-2 rounded-lg transition-all duration-200 text-sm;
+  }
+  .cortex-btn-ghost {
+    @apply bg-transparent hover:bg-cortex-700 text-cortex-muted hover:text-cortex-text px-4 py-2 rounded-lg transition-all duration-200 text-sm border border-cortex-border;
+  }
+  .cortex-input {
+    @apply bg-cortex-700 border border-cortex-border rounded-lg px-3 py-2 text-sm text-cortex-text placeholder-cortex-subtle focus:outline-none focus:border-cortex-primary/60 transition-colors duration-200;
+  }
+  .cortex-badge-green {
+    @apply bg-cortex-primary/10 text-cortex-primary border border-cortex-primary/20 text-xs px-2 py-0.5 rounded-full font-medium;
+  }
+  .cortex-badge-muted {
+    @apply bg-cortex-600 text-cortex-muted border border-cortex-border text-xs px-2 py-0.5 rounded-full;
   }
 }

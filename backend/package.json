@@ -1,7 +1,7 @@
-{
-  "name": "2pak-crm-backend",
-  "version": "0.1.0",
-  "description": "2Pak OS - Backend v0.1",
+﻿{
+  "name": "cortex-os-backend",
+  "version": "0.4.0",
+  "description": "Cortex OS - Sistema Operacional Empresarial da Cortex Web",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
@@ -11,11 +11,14 @@
     "seed": "node database/seed.js"
   },
   "dependencies": {
+    "axios": "^1.18.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.10.0",
-    "uuid": "^9.0.1"
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
