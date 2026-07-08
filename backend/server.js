@@ -3,6 +3,7 @@ const express = require('express');
 const cors    = require('cors');
 
 const { testConnection }     = require('./config/database');
+require('./modules/crm/listeners/pipelineEventListener');
 const { registrarListeners } = require('./shared/events/listeners');
 
 const authModule         = require('./modules/auth');
@@ -10,6 +11,7 @@ const crmModule          = require('./modules/crm');
 const notificacoesModule = require('./modules/notificacoes');
 const webhooksModule     = require('./modules/webhooks');
 const automacoesModule   = require('./modules/automacoes');
+const scraperRoutes      = require('./modules/crm/scraper.routes');
 
 const notFound     = require('./shared/middlewares/notFound');
 const errorHandler = require('./shared/middlewares/errorHandler');
@@ -32,6 +34,7 @@ v1.use('/', crmModule);
 v1.use('/', notificacoesModule);
 v1.use('/', webhooksModule);
 v1.use('/', automacoesModule);
+v1.use('/scraper', scraperRoutes);
 
 app.use('/api/v1', v1);
 app.use(notFound);

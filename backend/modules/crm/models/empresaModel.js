@@ -1,4 +1,4 @@
-const { pool } = require('../../../config/database');
+﻿const { pool } = require('../../../config/database');
 const { v4: uuidv4 } = require('uuid');
 
 async function findAll(organizacao_id) {
@@ -13,10 +13,12 @@ async function findAll(organizacao_id) {
 }
 
 async function findById(id) {
-  const [rows] = await pool.query(
-    'SELECT * FROM empresas WHERE id = ?',
-    [id]
-  );
+  const [rows] = await pool.query('SELECT * FROM empresas WHERE id = ?', [id]);
+  return rows[0] || null;
+}
+
+async function findByPlaceId(place_id) {
+  const [rows] = await pool.query('SELECT id FROM empresas WHERE place_id = ?', [place_id]);
   return rows[0] || null;
 }
 
@@ -24,9 +26,9 @@ async function create(dados) {
   const id = uuidv4();
   await pool.query(
     `INSERT INTO empresas
-       (id, nome_fantasia, razao_social, cnpj, segmento, porte,
-        site, origem_lead, status_atual_id, organizacao_id, criado_por_id, ativo)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, nome_fantasia, razao_social, cnpj, segmento, porte, site, origem_lead, 
+        status_atual_id, organizacao_id, criado_por_id, ativo, telefone, endereco, cidade, place_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       dados.nome_fantasia,
@@ -40,6 +42,10 @@ async function create(dados) {
       dados.organizacao_id  || null,
       dados.criado_por_id   || null,
       true,
+      dados.telefone        || null,
+      dados.endereco        || null,
+      dados.cidade          || null,
+      dados.place_id        || null,
     ]
   );
   return findById(id);
@@ -55,7 +61,11 @@ async function update(id, dados) {
        porte           = ?,
        site            = ?,
        origem_lead     = ?,
-       status_atual_id = ?
+       status_atual_id = ?,
+       telefone        = ?,
+       endereco        = ?,
+       cidade          = ?,
+       place_id        = ?
      WHERE id = ?`,
     [
       dados.nome_fantasia,
@@ -66,6 +76,10 @@ async function update(id, dados) {
       dados.site            || null,
       dados.origem_lead     || null,
       dados.status_atual_id || null,
+      dados.telefone        || null,
+      dados.endereco        || null,
+      dados.cidade          || null,
+      dados.place_id        || null,
       id,
     ]
   );
@@ -73,11 +87,8 @@ async function update(id, dados) {
 }
 
 async function softDelete(id) {
-  const [res] = await pool.query(
-    'UPDATE empresas SET ativo = FALSE WHERE id = ?',
-    [id]
-  );
+  const [res] = await pool.query('UPDATE empresas SET ativo = FALSE WHERE id = ?', [id]);
   return res.affectedRows > 0;
 }
 
-module.exports = { findAll, findById, create, update, softDelete };
+module.exports = { findAll, findById, create, update, softDelete, findByPlaceId };

@@ -1,15 +1,15 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const empresaController = require('../controllers/empresaController');
-const auth = require('../../../shared/middlewares/auth');
+const authMiddleware = require('../../../shared/middlewares/auth');
 
-// Protege todas as rotas do m?dulo de empresas com o middleware de autentica??o
-router.use(auth);
+router.get('/', authMiddleware, empresaController.listar);
+router.post('/', authMiddleware, empresaController.criar);
+router.get('/:id', authMiddleware, empresaController.buscarPorId);
+router.put('/:id', authMiddleware, empresaController.atualizar);
+router.delete('/:id', authMiddleware, empresaController.deletar);
 
-router.get('/', empresaController.listar);
-router.get('/:id', empresaController.buscarPorId);
-router.post('/', empresaController.criar);
-router.put('/:id', empresaController.atualizar);
-router.delete('/:id', empresaController.deletar);
+// Nova rota de importação via Maps
+router.post('/importar-maps', authMiddleware, empresaController.importarDoMaps);
 
 module.exports = router;

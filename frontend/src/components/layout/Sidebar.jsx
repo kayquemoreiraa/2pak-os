@@ -1,20 +1,21 @@
 ﻿import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Users, CheckSquare,
-  MessageSquare, Kanban, Bell, LogOut, User, Zap, Webhook,
+  MessageSquare, Kanban, Bell, LogOut, User, Zap, Webhook, MapPin
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const navItems = [
-  { to: "/",          icon: LayoutDashboard, label: "Dashboard"  },
-  { to: "/empresas",    icon: Building2,       label: "Empresas"   },
-  { to: "/contatos",    icon: Users,           label: "Contatos"   },
-  { to: "/tarefas",     icon: CheckSquare,     label: "Tarefas"    },
-  { to: "/pipeline",    icon: Kanban,          label: "Pipeline"   },
+  { to: "/",            icon: LayoutDashboard, label: "Dashboard"  },
+  { to: "/empresas",    icon: Building2,    label: "Empresas"   },
+  { to: "/contatos",    icon: Users,    label: "Contatos"   },
+  { to: "/tarefas",     icon: CheckSquare,    label: "Tarefas"    },
+  { to: "/pipeline",    icon: Kanban,    label: "Pipeline"   },
   { to: "/observacoes", icon: MessageSquare,   label: "Notas"      },
-  { to: "/followup",    icon: Bell,            label: "Follow-up"  },
-  { to: "/automacoes",  icon: Zap,             label: "Automacoes" },
-  { to: "/webhooks",    icon: Webhook,         label: "Webhooks"   },
+  { to: "/followup",    icon: Bell,    label: "Follow-up"  },
+  { to: "/automacoes",  icon: Zap,    label: "Automacoes" },
+  { to: "/webhooks",    icon: Webhook,    label: "Webhooks"   },
+  { to: "/captura-leads", icon: MapPin,    label: "Captura Maps" },
 ];
 
 const corPapel = {
@@ -82,4 +83,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-

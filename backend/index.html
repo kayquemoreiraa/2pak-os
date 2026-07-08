@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortex OS - Acesso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex items-center justify-center font-sans overflow-hidden relative">
+
+    <div class="absolute w-[500px] h-[500px] bg-purple-600/10 blur-[130px] rounded-full top-[-10%] left-[-10%] pointer-events-none"></div>
+    <div class="absolute w-[400px] h-[400px] bg-cyan-500/10 blur-[110px] rounded-full bottom-[-10%] right-[-10%] pointer-events-none"></div>
+
+    <div x-data="{ isLogin: true, loading: false, mensagem: '', erro: '' }" class="w-full max-w-md p-4 z-10">
+        
+        <div class="bg-[#111827]/80 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl transition-all duration-300 hover:border-purple-500/30">
+            
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-black tracking-widest bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    CORTEX OS
+                </h1>
+                <p class="text-slate-400 text-xs uppercase tracking-wider mt-2" x-text="isLogin ? 'Central de Autenticação' : 'Criar Nova Identidade Operacional'"></p>
+            </div>
+
+            <div x-show="erro" class="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg" x-text="erro" style="display: none;"></div>
+            <div x-show="mensagem" class="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-lg" x-text="mensagem" style="display: none;"></div>
+
+            <div x-show="isLogin" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" class="space-y-4">
+                <form @submit.prevent="
+                    loading = true; erro = ''; mensagem = '';
+                    fetch('http://localhost:3000/api/v1/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: $refs.lEmail.value, senha: $refs.lSenha.value })
+                    })
+                    .then(res => res.json().then(data => ({ status: res.status, data })))
+                    .then(res => {
+                        loading = false;
+                        if(res.status !== 200) throw new Error(res.data.erro || 'Credenciais inválidas');
+                        localStorage.setItem('token', res.data.token);
+                        mensagem = 'Acesso autorizado. Sincronizando...';
+                        setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
+                    })
+                    .catch(e => { loading = false; erro = e.message; });
+                ">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">E-mail</label>
+                        <input x-ref="lEmail" type="email" required placeholder="admin@cortex.com" class="w-full bg-[#060913] border border-slate-800 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Senha</label>
+                        <input x-ref="lSenha" type="password" required placeholder="••••••••" class="w-full bg-[#060913] border border-slate-800 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-sm">
+                    </div>
+                    <button type="submit" :disabled="loading" class="w-full mt-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-purple-950/50 transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+                        <span x-show="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        <span x-text="loading ? 'Validando...' : 'Iniciar Sessão'"></span>
+                    </button>
+                </form>
+                <p class="text-center text-xs text-slate-500 pt-2">Solicitar credencial? <a href="#" @click="isLogin = false; erro = ''; mensagem = ''" class="text-cyan-400 hover:underline">Registrar terminal</a></p>
+            </div>
+
+            <div x-show="!isLogin" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" class="space-y-4" style="display: none;">
+                <form @submit.prevent="
+                    loading = true; erro = ''; mensagem = '';
+                    fetch('http://localhost:3000/api/v1/registrar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome: $refs.cNome.value, email: $refs.cEmail.value, senha: $refs.cSenha.value, papel: 'admin' })
+                    })
+                    .then(res => res.json().then(data => ({ status: res.status, data })))
+                    .then(res => {
+                        loading = false;
+                        if(res.status !== 201) throw new Error(res.data.erro || 'Erro ao registrar usuário');
+                        mensagem = 'Registro efetuado com sucesso no banco!';
+                        setTimeout(() => { isLogin = true; mensagem = ''; }, 1500);
+                    })
+                    .catch(e => { loading = false; erro = e.message; });
+                ">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Operador</label>
+                        <input x-ref="cNome" type="text" required placeholder="Nome do desenvolvedor" class="w-full bg-[#060913] border border-slate-800 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">E-mail do Terminal</label>
+                        <input x-ref="cEmail" type="email" required placeholder="dev@cortex.com" class="w-full bg-[#060913] border border-slate-800 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Senha de Segurança</label>
+                        <input x-ref="cSenha" type="password" required minlength="8" placeholder="Mínimo 8 dígitos" class="w-full bg-[#060913] border border-slate-800 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                    </div>
+                    <button type="submit" :disabled="loading" class="w-full mt-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-cyan-950/50 transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+                        <span x-show="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        <span x-text="loading ? 'Gravando dados...' : 'Confirmar Registro'"></span>
+                    </button>
+                </form>
+                <p class="text-center text-xs text-slate-500 pt-2">Já possui registro? <a href="#" @click="isLogin = true; erro = ''; mensagem = ''" class="text-purple-400 hover:underline">Voltar ao login</a></p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

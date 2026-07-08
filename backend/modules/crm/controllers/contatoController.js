@@ -64,7 +64,7 @@ async function deletar(req, res) {
     if (!contato) {
       return res.status(404).json({ erro: 'Contato nao encontrado.' });
     }
-    await contatoModel.softDelete(req.params.id);
+    await pool.query('DELETE FROM contatos WHERE id = ?', [req.params.id]);
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao remover contato.', detalhes: error.message });

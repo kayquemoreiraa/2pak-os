@@ -12,6 +12,7 @@ import Observacoes from "./pages/Observacoes";
 import Followup from "./pages/Followup";
 import Automacoes from "./pages/Automacoes";
 import Webhooks from "./pages/Webhooks";
+import CapturaLeads from "./pages/CapturaLeads";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="followup"    element={<Followup />}    />
             <Route path="automacoes"  element={<Automacoes />}  />
             <Route path="webhooks"    element={<Webhooks />}    />
+            <Route path="captura-leads" element={<CapturaLeads />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

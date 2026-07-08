@@ -1,4 +1,6 @@
-ï»¿const empresaModel = require('../models/empresaModel');
+const { pool } = require('../../../config/database');
+
+const empresaModel = require('../models/empresaModel');
 const contatoModel = require('../models/contatoModel');
 const eventBus     = require('../../../shared/events');
 const { EVENTS }   = require('../../../shared/events');
@@ -74,13 +76,12 @@ async function deletar(req, res) {
     const empresaExistente = await empresaModel.findById(req.params.id);
     if (!empresaExistente) return res.status(404).json({ erro: 'Empresa nao encontrada.' });
     
-    // Exclui a empresa e os contatos vinculados
-    await empresaModel.softDelete(req.params.id);
+    await pool.query('DELETE FROM empresas WHERE id = ?', [req.params.id]);
     if (contatoModel.deleteByEmpresaId) {
         await contatoModel.deleteByEmpresaId(req.params.id);
     }
     
-    eventBus.emit(EVENTS.EMPRESA_REMOVIDA, {
+    eventBus.emit(EVENTS.EMPRESA_REMOVIDA,{
       id:             req.params.id,
       organizacao_id: req.usuario.organizacao_id,
     });
@@ -90,4 +91,36 @@ async function deletar(req, res) {
   }
 }
 
-module.exports = { listar, buscarPorId, criar, atualizar, deletar };
+async function importarDoMaps(req, res) {
+  try {
+    const empresasMaps = req.body;
+    if (!Array.isArray(empresasMaps)) return res.status(400).json({ erro: 'Envie um array de empresas.' });
+    const resultados = { criadas: 0, ignoradas: 0 };
+    for (const emp of empresasMaps) {
+      if (emp.place_id) {
+        const existe = await empresaModel.findByPlaceId(emp.place_id);
+        if (existe) {
+          resultados.ignoradas++;
+          continue;
+        }
+      }
+      await empresaModel.create({
+        nome_fantasia: emp.nome_fantasia,
+        telefone: emp.telefone || null,
+        endereco: emp.endereco || null,
+        cidade: emp.cidade || null,
+        site: emp.site || null,
+        origem_lead: 'Google Maps',
+        organizacao_id: req.usuario.organizacao_id,
+        criado_por_id: req.usuario.id,
+        ativo: true
+      });
+      resultados.criadas++;
+    }
+    res.status(200).json({ mensagem: 'Importação concluída', ...resultados });
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao importar do Maps.', detalhes: error.message});
+  }
+}
+
+module.exports = { listar, buscarPorId, criar, atualizar, deletar, importarDoMaps };

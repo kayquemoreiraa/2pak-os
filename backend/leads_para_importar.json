@@ -1,0 +1,14 @@
+[
+  {
+    "nome_fantasia": "Padaria do Povo",
+    "telefone": "(11) 2222-3333",
+    "endereco": "Rua das Flores, 10",
+    "place_id": "PLACE_ID_001"
+  },
+  {
+    "nome_fantasia": "Oficina do Auto",
+    "telefone": "(11) 4444-5555",
+    "endereco": "Av. Brasil, 900",
+    "place_id": "PLACE_ID_002"
+  }
+]
